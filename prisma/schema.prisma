@@ -6,3 +6,95 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum Role {
+  EMPLOYEE
+  ADMIN
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  PARTIALLY
+}
+
+enum ShippingStatus {
+  PENDING
+  TRANSIT
+  DELIVERED
+}
+
+enum Measure {
+  PIECE
+  KILOGRAM
+  LITER
+  METER
+}
+
+model Employee {
+  id        Int    @id @default(autoincrement())
+  email     String @unique
+  name      String
+  password  String
+  role      Role @default(EMPLOYEE)
+
+  orders Order[]
+}
+
+model Inventory {
+  id         Int    @id @default(autoincrement())
+  productId  Int @map("product_id")
+  vendorId   Int @map("vendor_id")
+
+
+  products Product @relation(fields: [productId], references: [id])
+  vendor Vendor @relation(fields: [vendorId], references: [id])
+}
+
+model Vendor {
+  id      Int    @id @default(autoincrement())
+  name    String
+  address String
+  phone   Int
+  email   String
+  categoryId Int @map("category_id")
+
+  category Category @relation(fields: [categoryId], references: [id])
+  orders Order[]
+  inventory Inventory[]
+}
+
+model Category {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  vendors Vendor[]
+  products Product[]
+}
+
+model Product {
+  id          Int     @id @default(autoincrement())
+  name        String
+  measure     Measure
+  quantity    Int 
+  description String
+  categoryId  Int @map("category_id")
+
+  category Category @relation(fields: [categoryId], references: [id])
+  Inventory Inventory[]
+}
+
+model Order {
+  id             Int     @id @default(autoincrement())
+  orderDate      DateTime @map("order_date")
+  shippingDate   DateTime @map("shipping_date")
+  paymentStatus  PaymentStatus @map("payment_status")
+  shippingStatus ShippingStatus @map("shipping_status")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @default(now()) @map("updated_at")
+  employeeId     Int @map("employee_id")
+  vendorId       Int @map("vendor_id")
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+  vendor Vendor @relation(fields: [vendorId], references: [id])
+}
