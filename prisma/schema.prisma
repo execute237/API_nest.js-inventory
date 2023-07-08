@@ -39,6 +39,15 @@ model Employee {
   role      Role @default(EMPLOYEE)
 
   orders Order[]
+  tokens Token[]
+}
+
+model Token {
+  id           Int    @id @default(autoincrement())
+  employeeId   Int   @map("employee_id") @unique
+  refreshToken String @map("refresh_token")
+
+  employees Employee @relation(fields: [employeeId], references: [id])
 }
 
 model Inventory {
