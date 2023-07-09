@@ -15,6 +15,15 @@ const categories: Prisma.CategoryCreateManyInput[] = [
 	{ name: 'toys', id: 10 },
 ];
 
+const adminUsers: Prisma.EmployeeCreateManyInput[] = [
+	{
+		email: 'admin@gmail.com',
+		name: 'admin',
+		password: '$2y$10$P0EgZ8IS6XvTKaLfvGBqmOtE6bebwbTxxdcnJrS/AwdiukV1YwHW.',
+		role: 'ADMIN',
+	},
+];
+
 async function main() {
 	await prisma.$connect();
 	for (const category of categories) {
@@ -25,6 +34,15 @@ async function main() {
 		});
 	}
 	console.log('Добавлено ' + categories.length + ' категорий');
+
+	for (const admin of adminUsers) {
+		await prisma.employee.create({
+			data: {
+				...admin,
+			},
+		});
+	}
+	console.log('Добавлено ' + adminUsers.length + ' админов');
 
 	await prisma.$disconnect();
 }

@@ -9,14 +9,14 @@ export class AuthController {
 
 	@Post('register')
 	async register(@Body() dto: RegisterAuthDto) {
-		return this.authService.createUser(dto.email, dto.name, dto.password);
+		return this.authService.createUser(dto.email, dto.name, dto.password, dto.role);
 	}
 
 	@HttpCode(200)
 	@Post('login')
 	async login(@Body() dto: LoginAuthDto) {
 		const user = await this.authService.validateUser(dto.email, dto.password);
-		return this.authService.login(user.name, user.email, user.id);
+		return this.authService.login(user.name, user.email, user.id, user.role);
 	}
 
 	@Get('refresh')
