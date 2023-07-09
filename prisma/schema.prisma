@@ -50,16 +50,6 @@ model Token {
   employees Employee @relation(fields: [employeeId], references: [id])
 }
 
-model Inventory {
-  id         Int    @id @default(autoincrement())
-  productId  Int @map("product_id")
-  vendorId   Int @map("vendor_id")
-
-
-  products Product @relation(fields: [productId], references: [id])
-  vendor Vendor @relation(fields: [vendorId], references: [id])
-}
-
 model Vendor {
   id      Int    @id @default(autoincrement())
   name    String
@@ -69,8 +59,8 @@ model Vendor {
   categoryId Int @map("category_id")
 
   category Category @relation(fields: [categoryId], references: [id])
-  orders Order[]
   inventory Inventory[]
+  orders Order[]
 }
 
 model Category {
@@ -78,19 +68,20 @@ model Category {
   name String
 
   vendors Vendor[]
-  products Product[]
+  inventory Inventory[]
 }
 
-model Product {
+model Inventory {
   id          Int     @id @default(autoincrement())
   name        String
   measure     Measure
   quantity    Int 
   description String
   categoryId  Int @map("category_id")
+  vendorId    Int @map("vendor_id")
 
   category Category @relation(fields: [categoryId], references: [id])
-  Inventory Inventory[]
+  vendor Vendor @relation(fields: [vendorId], references: [id])
 }
 
 model Order {
