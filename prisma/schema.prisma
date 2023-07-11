@@ -54,7 +54,7 @@ model Vendor {
   id      Int    @id @default(autoincrement())
   name    String
   address String
-  phone   Int
+  phone   String
   email   String
   categoryId Int @map("category_id")
 

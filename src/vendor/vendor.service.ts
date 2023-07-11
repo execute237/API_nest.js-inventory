@@ -1,26 +1,28 @@
 import { Injectable } from '@nestjs/common';
-import { CreateVendorDto } from './dto/create-vendor.dto';
-import { UpdateVendorDto } from './dto/update-vendor.dto';
+import { VendorDto } from './dto/vendor.dto';
+import { PrismaService } from '../database/prisma.service';
 
 @Injectable()
 export class VendorService {
-	create(createVendorDto: CreateVendorDto) {
-		return 'This action adds a new vendor';
+	constructor(private readonly prisma: PrismaService) {}
+
+	async create(vendorDto: VendorDto) {
+		return this.prisma.vendor.create({ data: { ...vendorDto } });
 	}
 
-	findAll() {
-		return `This action returns all vendor`;
+	async findAll() {
+		return this.prisma.vendor.findMany();
 	}
 
-	findOne(id: number) {
-		return `This action returns a #${id} vendor`;
+	async findOne(id: number) {
+		return this.prisma.vendor.findUnique({ where: { id } });
 	}
 
-	update(id: number, updateVendorDto: UpdateVendorDto) {
-		return `This action updates a #${id} vendor`;
+	async update(id: number, vendorDto: VendorDto) {
+		return this.prisma.vendor.update({ where: { id }, data: { ...vendorDto } });
 	}
 
-	remove(id: number) {
-		return `This action removes a #${id} vendor`;
+	async remove(id: number) {
+		return this.prisma.vendor.delete({ where: { id } });
 	}
 }
