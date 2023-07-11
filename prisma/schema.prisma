@@ -32,11 +32,11 @@ enum Measure {
 }
 
 model Employee {
-  id        Int    @id @default(autoincrement())
-  email     String @unique
-  name      String
-  password  String
-  role      Role @default(EMPLOYEE)
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  name     String
+  password String
+  role     Role   @default(EMPLOYEE)
 
   orders Order[]
   tokens Token[]
@@ -44,30 +44,30 @@ model Employee {
 
 model Token {
   id           Int    @id @default(autoincrement())
-  employeeId   Int   @map("employee_id") @unique
+  employeeId   Int    @unique @map("employee_id")
   refreshToken String @map("refresh_token")
 
   employees Employee @relation(fields: [employeeId], references: [id])
 }
 
 model Vendor {
-  id      Int    @id @default(autoincrement())
-  name    String
-  address String
-  phone   String
-  email   String
-  categoryId Int @map("category_id")
+  id         Int    @id @default(autoincrement())
+  name       String
+  address    String
+  phone      String
+  email      String
+  categoryId Int    @map("category_id")
 
-  category Category @relation(fields: [categoryId], references: [id])
+  category  Category    @relation(fields: [categoryId], references: [id])
   inventory Inventory[]
-  orders Order[]
+  orders    Order[]
 }
 
 model Category {
   id   Int    @id @default(autoincrement())
   name String
 
-  vendors Vendor[]
+  vendors   Vendor[]
   inventory Inventory[]
 }
 
@@ -75,26 +75,29 @@ model Inventory {
   id          Int     @id @default(autoincrement())
   name        String
   measure     Measure
-  quantity    Int 
+  quantity    Int
   description String
-  categoryId  Int @map("category_id")
-  vendorId    Int @map("vendor_id")
+  categoryId  Int     @map("category_id")
+  vendorId    Int     @map("vendor_id")
 
+  orders   Order[]
   category Category @relation(fields: [categoryId], references: [id])
-  vendor Vendor @relation(fields: [vendorId], references: [id])
+  vendor   Vendor   @relation(fields: [vendorId], references: [id])
 }
 
 model Order {
-  id             Int     @id @default(autoincrement())
-  orderDate      DateTime @map("order_date")
-  shippingDate   DateTime @map("shipping_date")
-  paymentStatus  PaymentStatus @map("payment_status")
+  id             Int            @id @default(autoincrement())
+  orderDate      DateTime       @map("order_date")
+  paymentStatus  PaymentStatus  @map("payment_status")
   shippingStatus ShippingStatus @map("shipping_status")
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @default(now()) @map("updated_at")
-  employeeId     Int @map("employee_id")
-  vendorId       Int @map("vendor_id")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @default(now()) @map("updated_at")
+  employeeId     Int            @map("employee_id")
+  vendorId       Int            @map("vendor_id")
+  inventoryId    Int            @map("inventory_id")
+  quantity       Int
 
-  employee Employee @relation(fields: [employeeId], references: [id])
-  vendor Vendor @relation(fields: [vendorId], references: [id])
+  inventory Inventory @relation(fields: [inventoryId], references: [id])
+  employee  Employee  @relation(fields: [employeeId], references: [id])
+  vendor    Vendor    @relation(fields: [vendorId], references: [id])
 }
