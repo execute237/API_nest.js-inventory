@@ -1,26 +1,27 @@
 import { Injectable } from '@nestjs/common';
-import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
+import { OrderDto } from './dto/order.dto';
+import { PrismaService } from '../database/prisma.service';
 
 @Injectable()
 export class OrderService {
-	create(createOrderDto: CreateOrderDto) {
-		return 'This action adds a new order';
+	constructor(private readonly prisma: PrismaService) {}
+
+	create(orderDto: OrderDto) {
+		return this.prisma.order.create({ data: { ...orderDto } });
 	}
 
 	findAll() {
-		return `This action returns all order`;
+		return this.prisma.order.findMany();
 	}
 
 	findOne(id: number) {
-		return `This action returns a #${id} order`;
+		return this.prisma.order.findUnique({ where: { id } });
 	}
 
-	update(id: number, updateOrderDto: UpdateOrderDto) {
-		return `This action updates a #${id} order`;
-	}
-
-	remove(id: number) {
-		return `This action removes a #${id} order`;
+	update(id: number, orderDto: OrderDto) {
+		return this.prisma.order.update({
+			where: { id },
+			data: { ...orderDto, updatedAt: new Date().toLocaleDateString('ru-RU') },
+		});
 	}
 }
