@@ -1,27 +1,48 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotAcceptableException } from '@nestjs/common';
 import { OrderDto } from './dto/order.dto';
 import { PrismaService } from '../database/prisma.service';
+import { ShippingStatus } from '@prisma/client';
+import { ORDER_NOT_DELIVERED } from './order.constants';
+import { InventoryService } from '../inventory/inventory.service';
+import { quantityUpdateEnum } from '../inventory/inventory.types';
 
 @Injectable()
 export class OrderService {
-	constructor(private readonly prisma: PrismaService) {}
+	constructor(
+		private readonly prisma: PrismaService,
+		private readonly inventoryService: InventoryService,
+	) {}
 
-	create(orderDto: OrderDto) {
+	async create(orderDto: OrderDto) {
 		return this.prisma.order.create({ data: { ...orderDto } });
 	}
 
-	findAll() {
+	async findAll() {
 		return this.prisma.order.findMany();
 	}
 
-	findOne(id: number) {
+	async findOne(id: number) {
 		return this.prisma.order.findUnique({ where: { id } });
 	}
 
-	update(id: number, orderDto: OrderDto) {
+	async update(id: number, orderDto: OrderDto) {
 		return this.prisma.order.update({
 			where: { id },
-			data: { ...orderDto, updatedAt: new Date().toLocaleDateString('ru-RU') },
+			data: { ...orderDto, updatedAt: new Date().toLocaleString('ru-RU') },
 		});
+	}
+
+	async orderProven(id: number) {
+		const order = await this.findOne(id);
+		if (order.shippingStatus !== ShippingStatus.DELIVERED) {
+			throw new NotAcceptableException(ORDER_NOT_DELIVERED);
+		}
+
+		const quantityOperation = {
+			operation: quantityUpdateEnum.PLUS,
+			number: order.quantity,
+		};
+		await this.inventoryService.updateQuantity(order.inventoryId, quantityOperation);
+		return this.prisma.order.update({ where: { id }, data: { proven: true } });
 	}
 }

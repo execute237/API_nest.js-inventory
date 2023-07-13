@@ -22,12 +22,12 @@ CREATE TABLE "Employee" (
 );
 
 -- CreateTable
-CREATE TABLE "Inventory" (
+CREATE TABLE "Token" (
     "id" SERIAL NOT NULL,
-    "product_id" INTEGER NOT NULL,
-    "vendor_id" INTEGER NOT NULL,
+    "employee_id" INTEGER NOT NULL,
+    "refresh_token" TEXT NOT NULL,
 
-    CONSTRAINT "Inventory_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Token_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -35,7 +35,7 @@ CREATE TABLE "Vendor" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "address" TEXT NOT NULL,
-    "phone" INTEGER NOT NULL,
+    "phone" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "category_id" INTEGER NOT NULL,
 
@@ -51,28 +51,31 @@ CREATE TABLE "Category" (
 );
 
 -- CreateTable
-CREATE TABLE "Product" (
+CREATE TABLE "Inventory" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "measure" "Measure" NOT NULL,
     "quantity" INTEGER NOT NULL,
     "description" TEXT NOT NULL,
     "category_id" INTEGER NOT NULL,
+    "vendor_id" INTEGER NOT NULL,
 
-    CONSTRAINT "Product_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Inventory_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Order" (
     "id" SERIAL NOT NULL,
     "order_date" TIMESTAMP(3) NOT NULL,
-    "shipping_date" TIMESTAMP(3) NOT NULL,
     "payment_status" "PaymentStatus" NOT NULL,
     "shipping_status" "ShippingStatus" NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "employee_id" INTEGER NOT NULL,
     "vendor_id" INTEGER NOT NULL,
+    "inventory_id" INTEGER NOT NULL,
+    "quantity" INTEGER NOT NULL,
+    "proven" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "Order_pkey" PRIMARY KEY ("id")
 );
@@ -80,17 +83,23 @@ CREATE TABLE "Order" (
 -- CreateIndex
 CREATE UNIQUE INDEX "Employee_email_key" ON "Employee"("email");
 
--- AddForeignKey
-ALTER TABLE "Inventory" ADD CONSTRAINT "Inventory_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "Product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+-- CreateIndex
+CREATE UNIQUE INDEX "Token_employee_id_key" ON "Token"("employee_id");
 
 -- AddForeignKey
-ALTER TABLE "Inventory" ADD CONSTRAINT "Inventory_vendor_id_fkey" FOREIGN KEY ("vendor_id") REFERENCES "Vendor"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Token" ADD CONSTRAINT "Token_employee_id_fkey" FOREIGN KEY ("employee_id") REFERENCES "Employee"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Vendor" ADD CONSTRAINT "Vendor_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Product" ADD CONSTRAINT "Product_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Inventory" ADD CONSTRAINT "Inventory_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Inventory" ADD CONSTRAINT "Inventory_vendor_id_fkey" FOREIGN KEY ("vendor_id") REFERENCES "Vendor"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Order" ADD CONSTRAINT "Order_inventory_id_fkey" FOREIGN KEY ("inventory_id") REFERENCES "Inventory"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Order" ADD CONSTRAINT "Order_employee_id_fkey" FOREIGN KEY ("employee_id") REFERENCES "Employee"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

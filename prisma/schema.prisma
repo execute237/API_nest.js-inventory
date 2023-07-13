@@ -96,6 +96,7 @@ model Order {
   vendorId       Int            @map("vendor_id")
   inventoryId    Int            @map("inventory_id")
   quantity       Int
+  proven         Boolean        @default(false)
 
   inventory Inventory @relation(fields: [inventoryId], references: [id])
   employee  Employee  @relation(fields: [employeeId], references: [id])
