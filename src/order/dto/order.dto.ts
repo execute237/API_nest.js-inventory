@@ -1,12 +1,10 @@
 import { PaymentStatus, ShippingStatus } from '@prisma/client';
-import { IsBoolean, IsDate, IsEnum, IsNumber, IsPositive } from 'class-validator';
+import { IsBoolean, IsDate, IsEnum, IsNumber, IsOptional, IsPositive } from 'class-validator';
 
 export class OrderDto {
 	@IsDate()
+	@IsOptional()
 	orderDate: Date;
-
-	@IsDate()
-	shippingDate: Date;
 
 	@IsEnum(PaymentStatus)
 	paymentStatus: PaymentStatus;

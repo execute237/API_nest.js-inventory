@@ -30,7 +30,7 @@ export class OrderController {
 
 	@UseGuards(JwtAuthGuard)
 	@Patch(':id')
-	async update(@Param('id', ParseIntPipe) id: number, @Body() orderDto: OrderDto) {
+	async update(@Param('id', ParseIntPipe) id: number, @Body() orderDto: Partial<OrderDto>) {
 		return this.orderService.update(id, orderDto);
 	}
 

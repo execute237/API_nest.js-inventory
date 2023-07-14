@@ -34,15 +34,16 @@ export class InventoryService {
 
 	async updateQuantity(id: number, updateQuantityDto: UpdateQuantityDto) {
 		const inventory = await this.findOne(id);
+		let quantity = inventory.quantity;
 		if (updateQuantityDto.operation === quantityUpdateEnum.MINUS) {
-			inventory.quantity - updateQuantityDto.number;
+			quantity -= updateQuantityDto.number;
 		} else {
-			inventory.quantity + updateQuantityDto.number;
+			quantity += updateQuantityDto.number;
 		}
 
 		return this.prisma.inventory.update({
 			where: { id: inventory.id },
-			data: { quantity: inventory.quantity },
+			data: { quantity: quantity },
 		});
 	}
 
