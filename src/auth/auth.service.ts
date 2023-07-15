@@ -4,7 +4,6 @@ import { PrismaService } from '../database/prisma.service';
 import { compare, genSalt, hash } from 'bcryptjs';
 import {
 	ALREADY_REGISTERED_ERROR,
-	ROLE_REGISTER_ERROR,
 	USER_NOT_FOUND_ERROR,
 	WRONG_PASSWORD_ERROR,
 	WRONG_REFRESH_TOKEN_ERROR,
@@ -14,29 +13,26 @@ import { Role } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
-	constructor(private jwtService: JwtService, private prisma: PrismaService) {}
+	constructor(private readonly jwtService: JwtService, private readonly prisma: PrismaService) {}
 
 	async findUser(email: string) {
 		return this.prisma.employee.findUnique({ where: { email } });
 	}
 
-	async createUser(email: string, name: string, password: string, role?: Role) {
+	async createUser(email: string, name: string, password: string) {
 		const userExist = await this.findUser(email);
 		if (userExist) {
 			throw new BadRequestException(ALREADY_REGISTERED_ERROR);
 		}
-		if (role == undefined || role == 'EMPLOYEE') {
-			const salt = await genSalt(10);
-			return this.prisma.employee.create({
-				data: {
-					email,
-					name,
-					password: await hash(password, salt),
-				},
-			});
-		}
 
-		throw new BadRequestException(ROLE_REGISTER_ERROR);
+		const salt = await genSalt(10);
+		return this.prisma.employee.create({
+			data: {
+				email,
+				name,
+				password: await hash(password, salt),
+			},
+		});
 	}
 
 	async validateUser(email: string, password: string) {
@@ -62,10 +58,12 @@ export class AuthService {
 	}
 
 	async generateTokens(payload: AuthPayload) {
-		const refreshToken = await this.jwtService.signAsync(payload, { expiresIn: '30d' });
-		const accessToken = await this.jwtService.signAsync(payload, { expiresIn: '15m' });
+		const tokens = await Promise.all([
+			this.jwtService.signAsync(payload, { expiresIn: '30d' }),
+			this.jwtService.signAsync(payload, { expiresIn: '15m' }),
+		]);
 
-		return { refreshToken, accessToken };
+		return { refreshToken: tokens[0], accessToken: tokens[1] };
 	}
 
 	async refreshTokens(refreshToken: string) {

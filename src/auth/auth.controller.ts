@@ -5,11 +5,11 @@ import { LoginAuthDto } from './dto/login-auth.dto';
 
 @Controller('auth')
 export class AuthController {
-	constructor(private authService: AuthService) {}
+	constructor(private readonly authService: AuthService) {}
 
 	@Post('register')
 	async register(@Body() dto: RegisterAuthDto) {
-		return this.authService.createUser(dto.email, dto.name, dto.password, dto.role);
+		return this.authService.createUser(dto.email, dto.name, dto.password);
 	}
 
 	@HttpCode(200)
