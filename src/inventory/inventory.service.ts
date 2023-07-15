@@ -1,13 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InventoryDto } from './dto/inventory.dto';
 import { PrismaService } from '../database/prisma.service';
-import { INVENTORY_NOT_FOUND } from './inventory.constants';
-import { UpdateQuantityDto } from './dto/update-quantity.dto';
-import { quantityUpdateEnum } from './inventory.types';
+import { INVENTORY_NOT_FOUND, QUANTITY_CANNOT_BE_NEGATIVE } from './inventory.constants';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class InventoryService {
-	constructor(private readonly prisma: PrismaService) {}
+	constructor(
+		private readonly prisma: PrismaService,
+		@InjectPinoLogger(InventoryService.name)
+		private readonly logger: PinoLogger,
+	) {}
 
 	async create(createInventoryDto: InventoryDto) {
 		return this.prisma.inventory.create({ data: { ...createInventoryDto } });
@@ -32,19 +35,28 @@ export class InventoryService {
 		});
 	}
 
-	async updateQuantity(id: number, updateQuantityDto: UpdateQuantityDto) {
+	async updateQuantity(id: number, number: number) {
 		const inventory = await this.findOne(id);
 		let quantity = inventory.quantity;
-		if (updateQuantityDto.operation === quantityUpdateEnum.MINUS) {
-			quantity -= updateQuantityDto.number;
-		} else {
-			quantity += updateQuantityDto.number;
+		quantity += number;
+		if (quantity < 0) {
+			throw new BadRequestException(QUANTITY_CANNOT_BE_NEGATIVE);
 		}
 
-		return this.prisma.inventory.update({
+		const updatedInventory = await this.prisma.inventory.update({
 			where: { id: inventory.id },
 			data: { quantity: quantity },
 		});
+
+		this.logger.info(
+			'Quantity in inventory with id ' +
+				inventory.id +
+				' changed from ' +
+				inventory.quantity +
+				' items to ' +
+				quantity,
+		);
+		return updatedInventory;
 	}
 
 	async remove(id: number) {

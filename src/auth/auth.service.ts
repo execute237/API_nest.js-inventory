@@ -40,7 +40,7 @@ export class AuthService {
 			},
 		});
 
-		this.logger.info(`Employee ${newUser.name} registered`);
+		this.logger.info(`Employee ${newUser.name}, id:${newUser.id} registered`);
 		return newUser;
 	}
 
@@ -63,7 +63,7 @@ export class AuthService {
 		const tokens = await this.generateTokens(payload);
 		await this.saveToken(tokens.refreshToken, id);
 
-		this.logger.info(`Employee ${name} logged`);
+		this.logger.info(`Employee ${name}, id:${id} logged`);
 		return tokens;
 	}
 
@@ -91,7 +91,7 @@ export class AuthService {
 		const tokens = await this.generateTokens(payload);
 		await this.saveToken(tokens.refreshToken, tokenExist.id);
 
-		this.logger.info(`Token ${refreshToken} refreshed`);
+		this.logger.info(`Token ${refreshToken}, id:${tokenExist.id} refreshed`);
 		return tokens;
 	}
 

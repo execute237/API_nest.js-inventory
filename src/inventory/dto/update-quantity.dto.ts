@@ -1,10 +1,7 @@
-import { IsEnum, IsNumber } from 'class-validator';
-import { quantityUpdateEnum } from '../inventory.types';
+import { IsNumber, ValidateIf } from 'class-validator';
 
 export class UpdateQuantityDto {
-	@IsEnum(quantityUpdateEnum)
-	operation: quantityUpdateEnum;
-
+	@ValidateIf((value) => value !== 0)
 	@IsNumber()
 	number: number;
 }

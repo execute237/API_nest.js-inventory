@@ -4,7 +4,6 @@ import { PrismaService } from '../database/prisma.service';
 import { ShippingStatus } from '@prisma/client';
 import { ORDER_ALREADY_PROVEN, ORDER_NOT_DELIVERED } from './order.constants';
 import { InventoryService } from '../inventory/inventory.service';
-import { quantityUpdateEnum } from '../inventory/inventory.types';
 
 @Injectable()
 export class OrderService {
@@ -40,18 +39,8 @@ export class OrderService {
 		if (order.shippingStatus !== ShippingStatus.DELIVERED) {
 			throw new NotAcceptableException(ORDER_NOT_DELIVERED);
 		}
+		await this.inventoryService.updateQuantity(order.inventoryId, order.quantity);
 
-		const quantityOperation = {
-			operation: quantityUpdateEnum.PLUS,
-			number: order.quantity,
-		};
-		const inventory = await this.inventoryService.updateQuantity(
-			order.inventoryId,
-			quantityOperation,
-		);
-		if (!inventory) {
-			throw new BadRequestException();
-		}
 		return this.prisma.order.update({ where: { id }, data: { proven: true } });
 	}
 }
