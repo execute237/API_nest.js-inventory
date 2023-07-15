@@ -6,11 +6,20 @@ import { OrderModule } from './order/order.module';
 import { DatabaseModule } from './database/database.module';
 import { InventoryModule } from './inventory/inventory.module';
 import { CategoryModule } from './category/category.module';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
 	imports: [
 		ConfigModule.forRoot({
 			isGlobal: true,
+		}),
+		LoggerModule.forRoot({
+			pinoHttp: {
+				transport: {
+					target: 'pino-pretty',
+					options: { colorize: true },
+				},
+			},
 		}),
 		AuthModule,
 		VendorModule,
