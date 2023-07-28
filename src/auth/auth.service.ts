@@ -10,16 +10,10 @@ import {
 } from './auth.constants';
 import { AuthPayload, DecodedPayload } from './auth.types';
 import { Role } from '@prisma/client';
-import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class AuthService {
-	constructor(
-		private readonly jwtService: JwtService,
-		private readonly prisma: PrismaService,
-		@InjectPinoLogger(AuthService.name)
-		private readonly logger: PinoLogger,
-	) {}
+	constructor(private readonly jwtService: JwtService, private readonly prisma: PrismaService) {}
 
 	async findUser(email: string) {
 		return this.prisma.employee.findUnique({ where: { email } });
@@ -40,7 +34,6 @@ export class AuthService {
 			},
 		});
 
-		this.logger.info(`Employee ${newUser.name}, id:${newUser.id} registered`);
 		return newUser;
 	}
 
@@ -63,7 +56,6 @@ export class AuthService {
 		const tokens = await this.generateTokens(payload);
 		await this.saveToken(tokens.refreshToken, id);
 
-		this.logger.info(`Employee ${name}, id:${id} logged`);
 		return tokens;
 	}
 
@@ -91,7 +83,6 @@ export class AuthService {
 		const tokens = await this.generateTokens(payload);
 		await this.saveToken(tokens.refreshToken, tokenExist.id);
 
-		this.logger.info(`Token ${refreshToken}, id:${tokenExist.id} refreshed`);
 		return tokens;
 	}
 

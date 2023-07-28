@@ -1,16 +1,10 @@
-import { BadRequestException, Injectable, NotAcceptableException } from '@nestjs/common';
 import { OrderDto } from './dto/order.dto';
 import { PrismaService } from '../database/prisma.service';
-import { ShippingStatus } from '@prisma/client';
-import { ORDER_ALREADY_PROVEN, ORDER_NOT_DELIVERED } from './order.constants';
-import { InventoryService } from '../inventory/inventory.service';
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class OrderService {
-	constructor(
-		private readonly prisma: PrismaService,
-		private readonly inventoryService: InventoryService,
-	) {}
+	constructor(private readonly prisma: PrismaService) {}
 
 	async create(orderDto: OrderDto) {
 		return this.prisma.order.create({ data: { ...orderDto } });
@@ -32,15 +26,6 @@ export class OrderService {
 	}
 
 	async orderProven(id: number) {
-		const order = await this.findOne(id);
-		if (order.proven) {
-			throw new BadRequestException(ORDER_ALREADY_PROVEN);
-		}
-		if (order.shippingStatus !== ShippingStatus.DELIVERED) {
-			throw new NotAcceptableException(ORDER_NOT_DELIVERED);
-		}
-		await this.inventoryService.updateQuantity(order.inventoryId, order.quantity);
-
 		return this.prisma.order.update({ where: { id }, data: { proven: true } });
 	}
 }

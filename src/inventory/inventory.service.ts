@@ -2,15 +2,10 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InventoryDto } from './dto/inventory.dto';
 import { PrismaService } from '../database/prisma.service';
 import { INVENTORY_NOT_FOUND, QUANTITY_CANNOT_BE_NEGATIVE } from './inventory.constants';
-import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class InventoryService {
-	constructor(
-		private readonly prisma: PrismaService,
-		@InjectPinoLogger(InventoryService.name)
-		private readonly logger: PinoLogger,
-	) {}
+	constructor(private readonly prisma: PrismaService) {}
 
 	async create(createInventoryDto: InventoryDto) {
 		return this.prisma.inventory.create({ data: { ...createInventoryDto } });
@@ -37,25 +32,15 @@ export class InventoryService {
 
 	async updateQuantity(id: number, number: number) {
 		const inventory = await this.findOne(id);
-		let quantity = inventory.quantity;
-		quantity += number;
+		const quantity = inventory.quantity + number;
 		if (quantity < 0) {
 			throw new BadRequestException(QUANTITY_CANNOT_BE_NEGATIVE);
 		}
 
 		const updatedInventory = await this.prisma.inventory.update({
 			where: { id: inventory.id },
-			data: { quantity: quantity },
+			data: { quantity: { increment: quantity } },
 		});
-
-		this.logger.info(
-			'Quantity in inventory with id ' +
-				inventory.id +
-				' changed from ' +
-				inventory.quantity +
-				' items to ' +
-				quantity,
-		);
 		return updatedInventory;
 	}
 

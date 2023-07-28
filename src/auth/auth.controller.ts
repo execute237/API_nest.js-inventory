@@ -9,7 +9,13 @@ export class AuthController {
 
 	@Post('register')
 	async register(@Body() dto: RegisterAuthDto) {
-		return this.authService.createUser(dto.email, dto.name, dto.password);
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		const { password: _, ...user } = await this.authService.createUser(
+			dto.email,
+			dto.name,
+			dto.password,
+		);
+		return user;
 	}
 
 	@HttpCode(200)
