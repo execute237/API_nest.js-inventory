@@ -1,5 +1,5 @@
 import { PaymentStatus, ShippingStatus } from '@prisma/client';
-import { IsBoolean, IsDate, IsEnum, IsNumber, IsOptional, IsPositive } from 'class-validator';
+import { IsDate, IsEnum, IsNumber, IsOptional, IsPositive } from 'class-validator';
 
 export class OrderDto {
 	@IsDate()
@@ -23,9 +23,4 @@ export class OrderDto {
 
 	@IsPositive()
 	quantity: number;
-}
-
-export class ProvenDto {
-	@IsBoolean()
-	proven: boolean;
 }

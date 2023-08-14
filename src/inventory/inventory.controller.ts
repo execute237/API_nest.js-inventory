@@ -19,7 +19,7 @@ import { HasRoles } from '../common/decorators/has-roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { User } from '../common/decorators/user.decorator';
 import { DecodedPayload } from '../auth/auth.types';
-import { EMPLOYEE_POSITIVE_NUMBER_FORBIDDEN } from './inventory.constants';
+import { INVENTORY_ERROR } from './inventory.constants';
 
 @Controller('inventory')
 export class InventoryController {
@@ -59,7 +59,7 @@ export class InventoryController {
 		@User() user: DecodedPayload,
 	) {
 		if (user.role === Role.EMPLOYEE && updateQuantityDto.number > 0) {
-			throw new ForbiddenException(EMPLOYEE_POSITIVE_NUMBER_FORBIDDEN);
+			throw new ForbiddenException(INVENTORY_ERROR.EMPLOYEE_POSITIVE_NUMBER_FORBIDDEN);
 		}
 		return this.inventoryService.updateQuantity(id, updateQuantityDto.number);
 	}

@@ -1,13 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { VendorDto } from './dto/vendor.dto';
 import { PrismaService } from '../database/prisma.service';
+import { VENDOR_ERROR } from './vendor.constants';
 
 @Injectable()
 export class VendorService {
 	constructor(private readonly prisma: PrismaService) {}
 
 	async create(vendorDto: VendorDto) {
-		return this.prisma.vendor.create({ data: { ...vendorDto } });
+		return this.prisma.vendor.create({ data: vendorDto });
 	}
 
 	async findAll() {
@@ -15,14 +16,23 @@ export class VendorService {
 	}
 
 	async findOne(id: number) {
-		return this.prisma.vendor.findUnique({ where: { id } });
+		const vendor = this.prisma.vendor.findUnique({ where: { id } });
+		if (!vendor) throw new NotFoundException(VENDOR_ERROR.NOT_FOUND);
+
+		return vendor;
 	}
 
-	async update(id: number, vendorDto: VendorDto) {
-		return this.prisma.vendor.update({ where: { id }, data: { ...vendorDto } });
+	async update(id: number, { name, address, phone, email, categoryId }: VendorDto) {
+		return this.prisma.vendor.update({
+			where: { id },
+			data: { name, address, phone, email, categoryId },
+		});
 	}
 
 	async remove(id: number) {
-		return this.prisma.vendor.delete({ where: { id } });
+		const deletedVendor = await this.prisma.vendor.delete({ where: { id } });
+		if (!deletedVendor) throw new NotFoundException(VENDOR_ERROR.NOT_FOUND);
+
+		return deletedVendor;
 	}
 }

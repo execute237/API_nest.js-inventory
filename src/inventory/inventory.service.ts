@@ -1,14 +1,16 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InventoryDto } from './dto/inventory.dto';
 import { PrismaService } from '../database/prisma.service';
-import { INVENTORY_NOT_FOUND, QUANTITY_CANNOT_BE_NEGATIVE } from './inventory.constants';
+import { INVENTORY_ERROR } from './inventory.constants';
 
 @Injectable()
 export class InventoryService {
 	constructor(private readonly prisma: PrismaService) {}
 
-	async create(createInventoryDto: InventoryDto) {
-		return this.prisma.inventory.create({ data: { ...createInventoryDto } });
+	async create({ name, measure, quantity, description, categoryId, vendorId }: InventoryDto) {
+		return this.prisma.inventory.create({
+			data: { name, measure, quantity, description, categoryId, vendorId },
+		});
 	}
 
 	async findAll() {
@@ -17,25 +19,25 @@ export class InventoryService {
 
 	async findOne(id: number) {
 		const inventory = await this.prisma.inventory.findUnique({ where: { id } });
-		if (!inventory) {
-			throw new NotFoundException(INVENTORY_NOT_FOUND);
-		}
+		if (!inventory) throw new NotFoundException(INVENTORY_ERROR.NOT_FOUND);
+
 		return inventory;
 	}
 
-	async update(id: number, updateInventoryDto: InventoryDto) {
+	async update(
+		id: number,
+		{ name, measure, quantity, description, categoryId, vendorId }: InventoryDto,
+	) {
 		return this.prisma.inventory.update({
 			where: { id },
-			data: { ...updateInventoryDto },
+			data: { name, measure, quantity, description, categoryId, vendorId },
 		});
 	}
 
 	async updateQuantity(id: number, number: number) {
 		const inventory = await this.findOne(id);
 		const quantity = inventory.quantity + number;
-		if (quantity < 0) {
-			throw new BadRequestException(QUANTITY_CANNOT_BE_NEGATIVE);
-		}
+		if (quantity < 0) throw new BadRequestException(INVENTORY_ERROR.QUANTITY_CANNOT_BE_NEGATIVE);
 
 		const updatedInventory = await this.prisma.inventory.update({
 			where: { id: inventory.id },
@@ -46,9 +48,8 @@ export class InventoryService {
 
 	async remove(id: number) {
 		const deletedInventory = await this.prisma.inventory.delete({ where: { id } });
-		if (!deletedInventory) {
-			throw new NotFoundException(INVENTORY_NOT_FOUND);
-		}
+		if (!deletedInventory) throw new NotFoundException(INVENTORY_ERROR.NOT_FOUND);
+
 		return deletedInventory;
 	}
 }

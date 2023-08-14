@@ -1,13 +1,14 @@
 import { OrderDto } from './dto/order.dto';
 import { PrismaService } from '../database/prisma.service';
 import { Injectable } from '@nestjs/common';
+import { EmployeeUpdateOrderDto } from './dto/update-order.dto';
 
 @Injectable()
 export class OrderService {
 	constructor(private readonly prisma: PrismaService) {}
 
 	async create(orderDto: OrderDto) {
-		return this.prisma.order.create({ data: { ...orderDto } });
+		return this.prisma.order.create({ data: orderDto });
 	}
 
 	async findAll() {
@@ -18,10 +19,10 @@ export class OrderService {
 		return this.prisma.order.findUnique({ where: { id } });
 	}
 
-	async update(id: number, orderDto: Partial<OrderDto>) {
+	async updateForEmployee(id: number, { paymentStatus, shippingStatus }: EmployeeUpdateOrderDto) {
 		return this.prisma.order.update({
 			where: { id },
-			data: { ...orderDto },
+			data: { paymentStatus, shippingStatus },
 		});
 	}
 

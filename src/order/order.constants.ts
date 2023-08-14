@@ -1,2 +1,4 @@
-export const ORDER_NOT_DELIVERED = 'Заказ не доставлен',
-	ORDER_ALREADY_PROVEN = 'Заказ уже проверен';
+export const ORDER_ERROR = {
+	NOT_DELIVERED: 'Заказ не доставлен',
+	ALREADY_PROVEN: 'Заказ уже проверен',
+} as const;
