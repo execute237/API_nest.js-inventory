@@ -15,16 +15,12 @@ import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { HasRoles } from '../common/decorators/has-roles.decorator';
 import { Role, ShippingStatus } from '@prisma/client';
-import { InventoryService } from '../inventory/inventory.service';
 import { ORDER_ERROR } from './order.constants';
 import { EmployeeUpdateOrderDto } from './dto/update-order.dto';
 
 @Controller('order')
 export class OrderController {
-	constructor(
-		private readonly orderService: OrderService,
-		private readonly inventoryService: InventoryService,
-	) {}
+	constructor(private readonly orderService: OrderService) {}
 
 	@UseGuards(JwtAuthGuard)
 	@Post('create')
@@ -48,12 +44,10 @@ export class OrderController {
 	@Patch(':id')
 	async updateForEmployee(
 		@Param('id', ParseIntPipe) id: number,
-		@Body() updatOrderDto: EmployeeUpdateOrderDto,
+		@Body() updateOrderDto: EmployeeUpdateOrderDto,
 	) {
-		return this.orderService.updateForEmployee(id, updatOrderDto);
+		return this.orderService.updateForEmployee(id, updateOrderDto);
 	}
-
-	//TODO update для админа
 
 	@HasRoles(Role.ADMIN)
 	@UseGuards(JwtAuthGuard, RolesGuard)
@@ -66,8 +60,6 @@ export class OrderController {
 			throw new ConflictException(ORDER_ERROR.NOT_DELIVERED);
 		}
 
-		//TODO завернуть в транзакцию
-		await this.inventoryService.updateQuantity(order.inventoryId, order.quantity);
-		return this.orderService.orderProven(order.id);
+		return this.orderService.orderProven(order.id, order.inventoryId, order.quantity);
 	}
 }
